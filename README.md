@@ -76,20 +76,31 @@ pages (2,000 issues) per panel — raise `MAX_PAGES` in
 
 ## Notes on the burn-rate calc
 
-There's no historical database here, so "certified/day" is approximated
-client-side: the dashboard stamps a "first seen" date in the visitor's
-browser (`localStorage`) the first time they load it, and divides current
-certified count by business days elapsed since then. It's a reasonable
-placeholder but resets per-browser and isn't a shared team-wide metric —
-if you want a real historical burn rate, that needs a small datastore
-(e.g. a Netlify Blob or a scheduled function that snapshots counts daily)
-rather than something a static site can do alone. Happy to build that
-next if useful.
+**Formula:** `(certified tickets today − certified tickets 14 days ago) ÷ 14`
+
+There's no historical database here, so this is tracked client-side: each
+day someone loads the dashboard, it stamps today's certified count into
+the visitor's browser (`localStorage`), keyed by date. The burn rate looks
+up the count from exactly 14 days ago and divides the difference by 14 to
+get a tickets/day rate.
+
+Since you just started using this, there's no entry from 14 days ago yet
+— so the rate reads **0.00** today, by design, rather than trying to
+backfill from a single snapshot. It'll start reflecting a real rate once
+14 days of history have been collected (assuming the dashboard gets
+loaded at least once most days). History is kept for ~30 days and pruned
+automatically.
+
+This resets per-browser and isn't a shared team-wide metric — if you want
+a real, shared historical burn rate, that needs a small server-side
+datastore (e.g. a Netlify Blob or a scheduled function that snapshots
+counts daily) instead of `localStorage`. Happy to build that next if useful.
 
 ## File map
 
 ```
 index.html                        markup
+
 style.css                         design tokens + layout
 config.js                         Jira filters/JQL — the only file you edit routinely
 app.js                            fetch/render logic

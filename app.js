@@ -130,34 +130,70 @@
       </li>`;
   }
 
-  function firstSeenDate() {
-    const key = "moevv_first_seen";
-    let stored = localStorage.getItem(key);
-    if (!stored) {
-      stored = new Date().toISOString();
-      localStorage.setItem(key, stored);
+  function certifiedHistory() {
+    const key = "moevv_certified_history";
+    try {
+      return JSON.parse(localStorage.getItem(key)) || {};
+    } catch {
+      return {};
     }
-    return new Date(stored);
+  }
+
+  function saveCertifiedHistory(hist) {
+    localStorage.setItem("moevv_certified_history", JSON.stringify(hist));
+  }
+
+  // Rolling 14-day burn rate: (certified today - certified 14 days ago) / 14.
+  // We only know "certified 14 days ago" from what this browser has recorded
+  // itself (once per calendar day), so the rate reads 0 until 14 days of
+  // history have actually been collected — it can't be backfilled from a
+  // single snapshot on day one.
+  function updateCertifiedHistoryAndGetBurnRate(certifiedCount) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayKey = today.toISOString().slice(0, 10);
+
+    const hist = certifiedHistory();
+    if (!(todayKey in hist)) hist[todayKey] = certifiedCount;
+
+    // Keep ~30 days of history, no need to grow forever.
+    const cutoff = new Date(today);
+    cutoff.setDate(cutoff.getDate() - 30);
+    Object.keys(hist).forEach((k) => {
+      if (new Date(k + "T00:00:00") < cutoff) delete hist[k];
+    });
+    saveCertifiedHistory(hist);
+
+    const fourteenAgo = new Date(today);
+    fourteenAgo.setDate(fourteenAgo.getDate() - 14);
+    const fourteenAgoKey = fourteenAgo.toISOString().slice(0, 10);
+
+    if (!(fourteenAgoKey in hist)) return 0; // not enough history yet
+
+    const diff = certifiedCount - hist[fourteenAgoKey];
+    return diff / 14;
   }
 
   function updatePaceStats(certifiedCount, combinedCount) {
     const today = new Date();
-    const start = firstSeenDate();
-    const elapsedDays = Math.max(1, businessDaysBetween(start, today));
-    const burnRate = certifiedCount / elapsedDays;
+    const burnRate = updateCertifiedHistoryAndGetBurnRate(certifiedCount);
 
-    $("statBurnRate").textContent = burnRate > 0 ? burnRate.toFixed(2) : "—";
+    $("statBurnRate").textContent = burnRate.toFixed(2);
 
     if (CFG.targetDate) {
       const target = new Date(CFG.targetDate + "T00:00:00");
       const daysLeft = businessDaysBetween(today, target);
       $("statDaysToTarget").textContent = daysLeft >= 0 ? daysLeft : "0";
+      const targetLabel = target.toLocaleDateString(undefined, { month: "short", day: "numeric" });
       $("targetDateLabel").textContent = target.toLocaleDateString(undefined, {
         month: "short", day: "numeric", year: "numeric",
       });
+      $("daysToTargetLabel").textContent = targetLabel;
     }
 
-    const remaining = Math.max(0, combinedCount - certifiedCount);
+    // `combined` is already "not yet certified" (statusCategory != Done),
+    // so it IS the remaining count — don't subtract certified again.
+    const remaining = Math.max(0, combinedCount);
     if (burnRate > 0 && remaining > 0) {
       const daysNeeded = Math.ceil(remaining / burnRate);
       const projected = new Date();
@@ -170,7 +206,7 @@
       $("statProjectedDone").textContent = projected.toLocaleDateString(undefined, {
         month: "short", day: "numeric",
       });
-    } else if (remaining === 0 && combinedCount > 0) {
+    } else if (remaining === 0) {
       $("statProjectedDone").textContent = "Done";
     } else {
       $("statProjectedDone").textContent = "—";
