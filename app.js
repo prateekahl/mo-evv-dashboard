@@ -2,7 +2,7 @@
   "use strict";
 
   const CFG = window.DASHBOARD_CONFIG || {};
-  const DONUT_COLORS = ["#0F766E", "#B45309", "#3B7DD8", "#B42318", "#6D28D9", "#8A968F"];
+  const DONUT_COLORS = ["#17C3A2", "#E0A030", "#5B9DF0", "#E5564C", "#9B7CE8", "#6B7480"];
 
   // ---------------------------------------------------------------------
   // Small helpers
@@ -109,7 +109,7 @@
     const total = entries.reduce((sum, [, n]) => sum + n, 0);
 
     if (!total) {
-      svg.innerHTML = `<circle cx="60" cy="60" r="48" fill="none" stroke="#E1E4E0" stroke-width="14"/>`;
+      svg.innerHTML = `<circle cx="60" cy="60" r="48" fill="none" stroke="#262B31" stroke-width="14"/>`;
       legend.innerHTML = `<li class="loading">No data yet.</li>`;
       return;
     }

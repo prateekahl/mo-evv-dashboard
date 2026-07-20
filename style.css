@@ -1,19 +1,20 @@
 :root {
-  --bg: #F5F6F4;
-  --surface: #FFFFFF;
-  --border: #E1E4E0;
-  --ink: #16211D;
-  --ink-soft: #55645C;
-  --ink-faint: #8A968F;
-  --accent: #0F766E;
-  --accent-soft: #E4F1EF;
-  --accent-line: #0F766E33;
-  --amber: #B45309;
-  --amber-soft: #FDF1E0;
-  --red: #B42318;
-  --red-soft: #FBEAE8;
+  --bg: #0B0D10;
+  --surface: #15181C;
+  --surface-raised: #1B1F24;
+  --border: #262B31;
+  --ink: #F2F4F5;
+  --ink-soft: #9AA3AC;
+  --ink-faint: #676F78;
+  --accent: #17C3A2;
+  --accent-soft: #17C3A21A;
+  --accent-line: #17C3A24D;
+  --amber: #E0A030;
+  --amber-soft: #E0A0301A;
+  --red: #E5564C;
+  --red-soft: #E5564C1A;
   --radius: 10px;
-  --shadow: 0 1px 2px rgba(22, 33, 29, 0.04), 0 6px 20px rgba(22, 33, 29, 0.05);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 8px 24px rgba(0, 0, 0, 0.35);
   --font-display: 'Space Grotesk', sans-serif;
   --font-body: 'IBM Plex Sans', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
@@ -52,21 +53,13 @@ a { color: var(--accent); }
 
 .mark svg { width: 38px; height: 38px; display: block; }
 
-.eyebrow {
-  margin: 0;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
 .topbar-titles h1 {
-  margin: 2px 0 2px;
+  margin: 0 0 2px;
   font-family: var(--font-display);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 .topbar-titles .sub {
@@ -98,7 +91,7 @@ a { color: var(--accent); }
 .btn:active { transform: translateY(1px); }
 
 .btn-ghost {
-  background: var(--surface);
+  background: var(--surface-raised);
   border-color: var(--border);
   color: var(--ink);
 }
@@ -106,9 +99,9 @@ a { color: var(--accent); }
 
 .btn-primary {
   background: var(--accent);
-  color: white;
+  color: #06120F;
 }
-.btn-primary:hover { background: #0C5F58; }
+.btn-primary:hover { background: #1FDBB6; }
 
 /* Layout */
 main {
@@ -380,7 +373,7 @@ td.key {
   padding: 9px 10px;
   border-radius: 7px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--surface-raised);
   color: var(--ink);
 }
 
