@@ -217,12 +217,6 @@
 
       updatePaceStats(certified.length, combined.length);
 
-      if (CFG.jiraBaseUrl && CFG.filterIds) {
-        if (CFG.filterIds.qa) $("qaJiraLink").href = `${CFG.jiraBaseUrl}/issues?filter=${CFG.filterIds.qa}`;
-        if (CFG.filterIds.dev) $("devJiraLink").href = `${CFG.jiraBaseUrl}/issues?filter=${CFG.filterIds.dev}`;
-        if (CFG.filterIds.certified) $("certifiedJiraLink").href = `${CFG.jiraBaseUrl}/issues?filter=${CFG.filterIds.certified}`;
-      }
-
       $("updatedAt").textContent = fmtTime(new Date());
     } catch (err) {
       console.error(err);

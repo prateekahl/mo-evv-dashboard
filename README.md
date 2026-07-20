@@ -21,33 +21,19 @@ gh repo create mo-evv-dashboard --private --source=. --push
 # git push -u origin main
 ```
 
-## 2. Set up Jira (whenever your filters are ready)
+## 2. Set up Jira
 
-1. Create/confirm the Jira project for MO EVV Accruals + Aggregator, and note its **project key** (e.g. `MOEVV`).
-2. Create three saved filters (or just JQL strings — filters aren't required, they just give you the "Open in Jira ↗" links):
-   - **Combined**: everything still to certify, e.g.
-     `project = MOEVV AND statusCategory != Done ORDER BY updated DESC`
-   - **Certified**: done on the target release line, e.g.
-     `project = MOEVV AND fixVersion = "4.6.0" AND status = Done`
-   - **QA**: `project = MOEVV AND status in ("QA In Progress", "Ready for QA", ...)`
-   - **DEV**: `project = MOEVV AND status in ("In Development", "Code Review", ...)`
-3. Grab each filter's ID from its URL (`.../issues/?filter=18679` → `18679`).
-4. Create a Jira API token: Atlassian account → **Security** → **API tokens** → **Create API token**.
+The QA, DEV, and Certified JQL are already wired into `config.js`, scoped to the `"Projects[Checkboxes]"` field for **MO EVV Aggregators** and **MO EVV Accruals**. Still to do:
 
-## 3. Fill in `config.js`
+1. Set `targetDate` in `config.js` (format `"YYYY-MM-DD"`) once you have a release target.
+2. Create a Jira API token: Atlassian account → **Security** → **API tokens** → **Create API token**.
+
+## 3. Set the target date
 
 Open `config.js` and set:
 
 ```js
 targetDate: "2026-09-30",
-jiraBaseUrl: "https://vivtechnologies.atlassian.net",
-jql: {
-  combined: "project = MOEVV AND statusCategory != Done",
-  certified: "project = MOEVV AND fixVersion = \"4.6.0\" AND status = Done",
-  qa: "project = MOEVV AND status in (\"QA In Progress\")",
-  dev: "project = MOEVV AND status in (\"In Development\")",
-},
-filterIds: { qa: "", dev: "", certified: "" },
 ```
 
 Commit and push — Netlify redeploys automatically on every push once step 4 is done.

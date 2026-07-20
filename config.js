@@ -17,22 +17,19 @@ window.DASHBOARD_CONFIG = {
   // function proxy (see netlify/functions/jira-search.js), never directly
   // from the browser.
   jql: {
-    // All MO EVV Accruals + Aggregator tickets still to certify (DEV + QA)
-    combined: "",
-    // Tickets that have reached a Done status on the target release line
-    certified: "",
-    // QA pipeline tickets (drives the "QA by status" donut + live QA table)
-    qa: "",
-    // DEV pipeline tickets (drives the "DEV by status" donut + live DEV table)
-    dev: "",
-  },
+    // All MO EVV Accruals + Aggregator tickets still to certify (DEV + QA).
+    // Assumption: "not yet certified" = not in a Done status category —
+    // adjust if that doesn't match what you want counted here.
+    combined: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and statusCategory != Done ORDER BY created DESC`,
 
-  // Jira filter IDs, used only to build the "Open in Jira ↗" links.
-  // Find these in the filter's URL: .../issues/?filter=<ID>
-  filterIds: {
-    qa: "",
-    dev: "",
-    certified: "",
+    // Tickets that have reached a Done status
+    certified: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and statusCategory in (Done) ORDER BY created DESC`,
+
+    // QA pipeline tickets (drives the "QA by status" donut + live QA table)
+    qa: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and status IN ("Ready For Testing", "In Testing", "Re-verify Bug", "Testing in Branch") ORDER BY created DESC`,
+
+    // DEV pipeline tickets (drives the "DEV by status" donut + live DEV table)
+    dev: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and status NOT IN ("In Testing", "Ready For Testing", "Testing in Branch", "Resolved Without Code", "QA Certified", "Re-verify Bug", "NO QA - Certified", "Retest After Cherrypick", "Archived") ORDER BY created DESC`,
   },
 
   // Poll interval for auto-refresh, in ms. Set to 0 to disable auto-refresh.
