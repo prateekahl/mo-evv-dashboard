@@ -39,6 +39,7 @@
     const s = (statusName || "").toLowerCase();
     if (s.includes("needs") || s.includes("fail") || s.includes("reject")) return "red";
     if (s.includes("in testing") || s.includes("in progress")) return "green";
+    if (s.includes("ready")) return "blue";
     return "";
   }
 
@@ -81,9 +82,9 @@
         <td class="key">${t.key}</td>
         <td>${escapeHtml(t.summary)}</td>
         <td><span class="status-pill ${statusToClass(t.status)}">${escapeHtml(t.status)}</span></td>
-        <td>${escapeHtml(t.release)}</td>
-        <td>${escapeHtml(t.assignee)}</td>
-        <td>${escapeHtml(t.qaAssignee)}</td>
+        <td class="muted-cell">${escapeHtml(t.release)}</td>
+        <td class="muted-cell" style="font-family: var(--sans); color: var(--muted);">${escapeHtml(t.assignee)}</td>
+        <td class="muted-cell" style="font-family: var(--sans); color: var(--muted);">${escapeHtml(t.qaAssignee)}</td>
       </tr>`
       )
       .join("");
