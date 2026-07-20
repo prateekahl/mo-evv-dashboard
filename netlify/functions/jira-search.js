@@ -1,5 +1,12 @@
 // GET /.netlify/functions/jira-search?jql=<encoded JQL>
 // Proxies a Jira issue search so the API token never reaches the browser.
+//
+// Uses /rest/api/3/search/jql — Atlassian fully retired the old
+// /rest/api/3/search endpoint (it now returns 410 Gone for every site).
+// The new endpoint returns { issues, isLast, nextPageToken } instead of
+// { issues, total, startAt }; this app only reads `issues`, so no other
+// changes were needed. If your ticket counts ever exceed 100 per panel,
+// you'll want to follow nextPageToken to fetch subsequent pages.
 
 exports.handler = async (event) => {
   const { JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN } = process.env;
@@ -24,7 +31,7 @@ exports.handler = async (event) => {
   ];
 
   try {
-    const url = `${JIRA_BASE_URL}/rest/api/3/search?jql=${encodeURIComponent(jql)}&maxResults=100&fields=${fields.join(",")}`;
+    const url = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=${fields.join(",")}`;
     const res = await fetch(url, {
       headers: {
         Authorization: `Basic ${auth}`,
