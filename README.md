@@ -1,9 +1,9 @@
 # MO EVV Accruals + Aggregator — Release Burndown
 
-A read-through-to-live-data dashboard modeled on the "Viv view" of the
+A read-only, live-data dashboard modeled on the "Viv view" of the
 Compliance V2 burndown board, pointed at the Bayada MO EVV Accruals +
-Aggregator workstream. Runs as static HTML/CSS/JS with two Netlify
-serverless functions acting as a Jira proxy so no API token ever reaches
+Aggregator workstream. Runs as static HTML/CSS/JS with a Netlify
+serverless function acting as a Jira proxy so no API token ever reaches
 the browser.
 
 The dashboard renders fine right now with empty state ("—" everywhere) —
@@ -33,7 +33,6 @@ gh repo create mo-evv-dashboard --private --source=. --push
    - **DEV**: `project = MOEVV AND status in ("In Development", "Code Review", ...)`
 3. Grab each filter's ID from its URL (`.../issues/?filter=18679` → `18679`).
 4. Create a Jira API token: Atlassian account → **Security** → **API tokens** → **Create API token**.
-5. If you want ticket creation to auto-assign DEV/QA people, grab their **account IDs** (visible in their Jira profile URL, or via `Atlassian:lookupJiraAccountId` if you're doing this through Claude/Atlassian MCP).
 
 ## 3. Fill in `config.js`
 
@@ -49,7 +48,6 @@ jql: {
   dev: "project = MOEVV AND status in (\"In Development\")",
 },
 filterIds: { qa: "", dev: "", certified: "" },
-ticketDefaults: { projectKey: "MOEVV" },
 ```
 
 Commit and push — Netlify redeploys automatically on every push once step 4 is done.
@@ -72,16 +70,12 @@ In Netlify: **Site settings → Environment variables**, add:
 | `JIRA_BASE_URL` | `https://vivtechnologies.atlassian.net` |
 | `JIRA_EMAIL` | the email tied to the API token |
 | `JIRA_API_TOKEN` | the token from step 2.4 |
-| `JIRA_PROJECT_KEY` | e.g. `MOEVV` |
-| `JIRA_DEV_ASSIGNEE_ACCOUNT_ID` | optional, for ticket auto-assignment |
-| `JIRA_QA_ASSIGNEE_ACCOUNT_ID` | optional, for ticket auto-assignment |
 
-Redeploy (Netlify → Deploys → Trigger deploy) after adding these so the functions pick them up.
+Redeploy (Netlify → Deploys → Trigger deploy) after adding these so the function picks them up.
 
 ## 6. Verify
 
 - Load the site — stat cards, donuts, and tables should populate from Jira within a couple seconds.
-- Click **Open Ticket**, submit a test issue, confirm it lands in the Jira project.
 - Click **↺ Refresh** to confirm live polling works; it also auto-refreshes every 5 minutes (`refreshIntervalMs` in `config.js`).
 
 ## Notes on the burn-rate calc
@@ -102,8 +96,7 @@ next if useful.
 index.html                        markup
 style.css                         design tokens + layout
 config.js                         Jira filters/JQL — the only file you edit routinely
-app.js                            fetch/render logic, modals
+app.js                            fetch/render logic
 netlify/functions/jira-search.js  JQL search proxy (GET)
-netlify/functions/jira-create.js  ticket creation proxy (POST)
 netlify.toml                      Netlify build/publish config
 ```

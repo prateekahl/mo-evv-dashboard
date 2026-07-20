@@ -35,13 +35,6 @@ window.DASHBOARD_CONFIG = {
     certified: "",
   },
 
-  // Default values applied when a ticket is created via the "Open Ticket" modal.
-  // The actual creation happens in netlify/functions/jira-create.js, which
-  // also needs JIRA_PROJECT_KEY / assignee account IDs set as env vars.
-  ticketDefaults: {
-    projectKey: "", // e.g. "MOEVV"
-  },
-
   // Poll interval for auto-refresh, in ms. Set to 0 to disable auto-refresh.
   refreshIntervalMs: 5 * 60 * 1000,
 };

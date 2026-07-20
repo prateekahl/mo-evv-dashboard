@@ -231,69 +231,9 @@
   }
 
   // ---------------------------------------------------------------------
-  // Ticket creation
-  // ---------------------------------------------------------------------
-  async function submitTicket(e) {
-    e.preventDefault();
-    const payload = {
-      issueType: $("issueType").value,
-      summary: $("ticketSummary").value,
-      description: $("ticketDescription").value,
-      priority: $("ticketPriority").value,
-      projectKey: (CFG.ticketDefaults && CFG.ticketDefaults.projectKey) || "",
-    };
-
-    try {
-      const res = await fetch("/.netlify/functions/jira-create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`Create failed (${res.status})`);
-      closeModal("ticketModalBackdrop");
-      $("ticketForm").reset();
-      showToast("Ticket submitted ✅");
-      loadDashboard();
-    } catch (err) {
-      console.error(err);
-      showToast("Couldn't create the ticket — check the Netlify function logs.");
-    }
-  }
-
-  // ---------------------------------------------------------------------
-  // Modals
-  // ---------------------------------------------------------------------
-  function openModal(id) { $(id).classList.add("open"); }
-  function closeModal(id) { $(id).classList.remove("open"); }
-
-  function wireModals() {
-    $("openTicketBtn").addEventListener("click", () => openModal("ticketModalBackdrop"));
-    $("ticketModalClose").addEventListener("click", () => closeModal("ticketModalBackdrop"));
-    $("ticketCancelBtn").addEventListener("click", () => closeModal("ticketModalBackdrop"));
-    $("ticketForm").addEventListener("submit", submitTicket);
-
-    $("faqBtn").addEventListener("click", () => openModal("faqModalBackdrop"));
-    $("faqModalClose").addEventListener("click", () => closeModal("faqModalBackdrop"));
-
-    [$("ticketModalBackdrop"), $("faqModalBackdrop")].forEach((backdrop) => {
-      backdrop.addEventListener("click", (e) => {
-        if (e.target === backdrop) backdrop.classList.remove("open");
-      });
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        closeModal("ticketModalBackdrop");
-        closeModal("faqModalBackdrop");
-      }
-    });
-  }
-
-  // ---------------------------------------------------------------------
   // Init
   // ---------------------------------------------------------------------
   function init() {
-    wireModals();
     $("refreshBtn").addEventListener("click", loadDashboard);
     loadDashboard();
     if (CFG.refreshIntervalMs > 0) {

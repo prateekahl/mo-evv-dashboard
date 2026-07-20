@@ -24,8 +24,6 @@
   <div class="topbar-right">
     <span class="updated">Updated <span id="updatedAt">—</span></span>
     <button class="btn btn-ghost" id="refreshBtn">↺ Refresh</button>
-    <button class="btn btn-ghost" id="faqBtn">❔ Flow FAQ</button>
-    <button class="btn btn-primary" id="openTicketBtn">＋ Open Ticket</button>
   </div>
 </header>
 
@@ -137,88 +135,6 @@
   </section>
 
 </main>
-
-<!-- Open Ticket modal -->
-<div class="modal-backdrop" id="ticketModalBackdrop">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle">
-    <div class="modal-head">
-      <div>
-        <h2 id="ticketModalTitle">Open a ticket</h2>
-        <p class="hint">Creates an issue in the MO EVV Accruals + Aggregator project</p>
-      </div>
-      <button class="modal-close" id="ticketModalClose" aria-label="Close">✕</button>
-    </div>
-    <form id="ticketForm">
-      <label class="field">
-        <span>Issue type *</span>
-        <select id="issueType" required>
-          <option value="">— Select issue type —</option>
-          <option value="Bug">Functionality isn't working as expected. (Bug)</option>
-          <option value="Enhancement">The flow/process of the functionality needs improvement. (Enhancement)</option>
-          <option value="Story">There is missing capability. (Story)</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Ticket summary / title *</span>
-        <input type="text" id="ticketSummary" required maxlength="255">
-      </label>
-      <label class="field">
-        <span>Description — what is the issue? *</span>
-        <textarea id="ticketDescription" required rows="4"></textarea>
-      </label>
-      <label class="field">
-        <span>Priority *</span>
-        <select id="ticketPriority" required>
-          <option value="">— Select priority —</option>
-          <option value="Urgent">🔴 Urgent</option>
-          <option value="High">🟠 High</option>
-          <option value="Medium">🟡 Medium</option>
-          <option value="Low">⚪ Low</option>
-        </select>
-      </label>
-      <label class="field">
-        <span>Attachments (optional)</span>
-        <input type="file" id="ticketAttachments" multiple>
-        <span class="hint">Screenshots and small docs under ~5 MB each.</span>
-      </label>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-ghost" id="ticketCancelBtn">Cancel</button>
-        <button type="submit" class="btn btn-primary">Submit ticket</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Flow FAQ modal -->
-<div class="modal-backdrop" id="faqModalBackdrop">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="faqModalTitle">
-    <div class="modal-head">
-      <div>
-        <h2 id="faqModalTitle">Flow FAQ</h2>
-        <p class="hint">From opening a ticket to MO EVV certification</p>
-      </div>
-      <button class="modal-close" id="faqModalClose" aria-label="Close">✕</button>
-    </div>
-    <ol class="faq-steps">
-      <li>
-        <h3>Open a ticket</h3>
-        <p>Click <strong>Open Ticket</strong> in the top right. Fill in the issue type, summary, description, and priority, then submit.</p>
-      </li>
-      <li>
-        <h3>Ticket is created in Jira</h3>
-        <p>On submit, an issue is created in the MO EVV Accruals + Aggregator project with the preset DEV and QA assignees. It appears in the live tables on the next refresh.</p>
-      </li>
-      <li>
-        <h3>The ticket moves through the pipeline</h3>
-        <p>It starts in DEV statuses; once DEV is complete it moves into QA statuses. The status donuts at the top reflect where everything sits.</p>
-      </li>
-      <li>
-        <h3>Ticket gets certified</h3>
-        <p>Once QA finishes, the ticket reaches a Done status on the target release line and appears in the MO EVV certified table.</p>
-      </li>
-    </ol>
-  </div>
-</div>
 
 <div class="toast" id="toast"></div>
 
