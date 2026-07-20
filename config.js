@@ -8,7 +8,7 @@ window.DASHBOARD_CONFIG = {
 
   // Human-readable target date shown in the header + used for "days to target"
   // Format: "YYYY-MM-DD"
-  targetDate: "", // e.g. "2026-09-30"
+  targetDate: "2026-08-12", // e.g. "2026-09-30"
 
   // Jira base URL, e.g. "https://vivtechnologies.atlassian.net"
   jiraBaseUrl: "https://vivtechnologies.atlassian.net",
