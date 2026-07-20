@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 window.DASHBOARD_CONFIG = {
 
-  // Human-readable target date shown in the header + used for "days to target"
+  // Human-readable target date shown in the header + used for "days to Aug 4"
   // Format: "YYYY-MM-DD"
   targetDate: "2026-08-05", // e.g. "2026-09-30"
 
