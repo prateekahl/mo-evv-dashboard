@@ -25,12 +25,24 @@ window.DASHBOARD_CONFIG = {
     // Tickets that have reached a Done status
     certified: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and statusCategory in (Done) ORDER BY created DESC`,
 
-    // QA pipeline tickets (drives the "QA by status" donut + live QA table)
+    // QA pipeline tickets (drives the "QA by status" list + live QA table)
     qa: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and status IN ("Ready For Testing", "In Testing", "Re-verify Bug", "Testing in Branch") ORDER BY created DESC`,
 
-    // DEV pipeline tickets (drives the "DEV by status" donut + live DEV table)
+    // DEV pipeline tickets (drives the "DEV by status" list + live DEV table)
     dev: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and status NOT IN ("In Testing", "Ready For Testing", "Testing in Branch", "Resolved Without Code", "QA Certified", "Re-verify Bug", "NO QA - Certified", "Retest After Cherrypick", "Archived") ORDER BY created DESC`,
   },
+
+  // Optional: force a specific status's badge color instead of the default
+  // heuristic (green = "in testing"/"in progress", red = "needs"/"fail"/
+  // "reject", everything else neutral). Keys must match the Jira status
+  // name exactly. Values: "green", "red", or "" for neutral.
+  // Example:
+  // statusColors: {
+  //   "Blocked": "red",
+  //   "Needs Requirements": "red",
+  //   "In Testing": "green",
+  // },
+  statusColors: {},
 
   // Poll interval for auto-refresh, in ms. Set to 0 to disable auto-refresh.
   refreshIntervalMs: 5 * 60 * 1000,

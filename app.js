@@ -2,7 +2,6 @@
   "use strict";
 
   const CFG = window.DASHBOARD_CONFIG || {};
-  const DONUT_COLORS = ["#17C3A2", "#E0A030", "#5B9DF0", "#E5564C", "#9B7CE8", "#6B7480"];
 
   // ---------------------------------------------------------------------
   // Small helpers
@@ -35,9 +34,11 @@
   }
 
   function statusToClass(statusName) {
+    const override = CFG.statusColors && CFG.statusColors[statusName];
+    if (override) return override;
     const s = (statusName || "").toLowerCase();
-    if (s.includes("block") || s.includes("fail") || s.includes("reject")) return "red";
-    if (s.includes("progress") || s.includes("review") || s.includes("hold")) return "amber";
+    if (s.includes("needs") || s.includes("fail") || s.includes("reject")) return "red";
+    if (s.includes("in testing") || s.includes("in progress")) return "green";
     return "";
   }
 
@@ -102,41 +103,31 @@
     return counts;
   }
 
-  function renderDonut(svgId, legendId, counts) {
-    const svg = $(svgId);
-    const legend = $(legendId);
+  function renderStatusList(listId, counts) {
+    const list = $(listId);
     const entries = Object.entries(counts);
     const total = entries.reduce((sum, [, n]) => sum + n, 0);
 
     if (!total) {
-      svg.innerHTML = `<circle cx="60" cy="60" r="48" fill="none" stroke="#262B31" stroke-width="14"/>`;
-      legend.innerHTML = `<li class="loading">No data yet.</li>`;
+      list.innerHTML = `<li class="loading">No data yet.</li>`;
       return;
     }
 
-    const r = 48;
-    const circumference = 2 * Math.PI * r;
-    let offset = 0;
-    const segments = entries
-      .map(([status, count], i) => {
-        const frac = count / total;
-        const dash = frac * circumference;
-        const seg = `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${DONUT_COLORS[i % DONUT_COLORS.length]}"
-          stroke-width="14" stroke-dasharray="${dash} ${circumference - dash}"
-          stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;
-        offset += dash;
-        return seg;
-      })
-      .join("");
-    svg.innerHTML = segments;
-
-    legend.innerHTML = entries
+    const rows = entries
       .map(
-        ([status, count], i) => `
-      <li><span class="swatch" style="background:${DONUT_COLORS[i % DONUT_COLORS.length]}"></span>
-        ${escapeHtml(status)} <span class="count">${count}</span></li>`
+        ([status, count]) => `
+      <li class="status-row-item">
+        <span>${escapeHtml(status)}</span>
+        <span class="status-badge ${statusToClass(status)}">${count}</span>
+      </li>`
       )
       .join("");
+
+    list.innerHTML = `${rows}
+      <li class="status-row-item status-total">
+        <span>Total</span>
+        <span class="status-badge total">${total}</span>
+      </li>`;
   }
 
   function firstSeenDate() {
@@ -207,9 +198,11 @@
       $("statCertified").textContent = certified.length || "0";
       $("statActioned").textContent = combined.length + certified.length;
       $("certifiedCount").textContent = `${certified.length} certified`;
+      $("qaTableCount").textContent = `${qa.length} total`;
+      $("devTableCount").textContent = `${dev.length} total`;
 
-      renderDonut("qaDonut", "qaLegend", statusCounts(qa));
-      renderDonut("devDonut", "devLegend", statusCounts(dev));
+      renderStatusList("qaStatusList", statusCounts(qa));
+      renderStatusList("devStatusList", statusCounts(dev));
 
       renderTable("certifiedTable", certified);
       renderTable("qaTable", qa);

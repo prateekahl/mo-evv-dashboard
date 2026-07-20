@@ -3,10 +3,10 @@
 //
 // Uses /rest/api/3/search/jql — Atlassian fully retired the old
 // /rest/api/3/search endpoint (it now returns 410 Gone for every site).
-// The new endpoint returns { issues, isLast, nextPageToken } instead of
-// { issues, total, startAt }; this app only reads `issues`, so no other
-// changes were needed. If your ticket counts ever exceed 100 per panel,
-// you'll want to follow nextPageToken to fetch subsequent pages.
+// The new endpoint pages results via nextPageToken instead of the old
+// startAt/total model, and caps each page at 100 issues — so this loops
+// through every page and returns the full combined issue list, rather
+// than silently truncating at 100.
 
 exports.handler = async (event) => {
   const { JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN } = process.env;
@@ -30,25 +30,43 @@ exports.handler = async (event) => {
     // e.g. "customfield_10045" — and reference it in app.js's normalizeIssue().
   ];
 
+  const MAX_PAGES = 20; // safety cap: 20 pages * 100 = 2,000 issues max
+
   try {
-    const url = `${JIRA_BASE_URL}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=100&fields=${fields.join(",")}`;
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Basic ${auth}`,
-        Accept: "application/json",
-      },
-    });
+    let allIssues = [];
+    let nextPageToken = null;
+    let page = 0;
 
-    if (!res.ok) {
-      const text = await res.text();
-      return { statusCode: res.status, body: JSON.stringify({ error: text }) };
-    }
+    do {
+      const params = new URLSearchParams({
+        jql,
+        maxResults: "100",
+        fields: fields.join(","),
+      });
+      if (nextPageToken) params.set("nextPageToken", nextPageToken);
 
-    const data = await res.json();
+      const res = await fetch(`${JIRA_BASE_URL}/rest/api/3/search/jql?${params.toString()}`, {
+        headers: {
+          Authorization: `Basic ${auth}`,
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        return { statusCode: res.status, body: JSON.stringify({ error: text }) };
+      }
+
+      const data = await res.json();
+      allIssues = allIssues.concat(data.issues || []);
+      nextPageToken = data.isLast ? null : data.nextPageToken;
+      page++;
+    } while (nextPageToken && page < MAX_PAGES);
+
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ issues: allIssues }),
     };
   } catch (err) {
     return { statusCode: 502, body: JSON.stringify({ error: err.message }) };

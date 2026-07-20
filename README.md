@@ -61,8 +61,18 @@ Redeploy (Netlify → Deploys → Trigger deploy) after adding these so the func
 
 ## 6. Verify
 
-- Load the site — stat cards, donuts, and tables should populate from Jira within a couple seconds.
+- Load the site — stat cards, status lists, and tables should populate from Jira within a couple seconds.
 - Click **↺ Refresh** to confirm live polling works; it also auto-refreshes every 5 minutes (`refreshIntervalMs` in `config.js`).
+
+## Notes on pagination
+
+Jira's search API caps each response at 100 issues per page. The
+`jira-search` function loops through every page (using Jira's
+`nextPageToken`) and returns the full combined list, so panels with more
+than 100 matching tickets (e.g. a large certified backlog) show the true
+count rather than silently truncating at 100. There's a safety cap of 20
+pages (2,000 issues) per panel — raise `MAX_PAGES` in
+`netlify/functions/jira-search.js` if you ever need more than that.
 
 ## Notes on the burn-rate calc
 

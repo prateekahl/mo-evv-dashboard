@@ -52,19 +52,13 @@
       <div class="panel-head">
         <h2>QA by status</h2>
       </div>
-      <div class="donut-wrap">
-        <svg class="donut" id="qaDonut" viewBox="0 0 120 120"></svg>
-        <ul class="donut-legend" id="qaLegend"><li class="loading">Loading…</li></ul>
-      </div>
+      <ul class="status-list" id="qaStatusList"><li class="loading">Loading…</li></ul>
     </div>
     <div class="panel">
       <div class="panel-head">
         <h2>DEV by status</h2>
       </div>
-      <div class="donut-wrap">
-        <svg class="donut" id="devDonut" viewBox="0 0 120 120"></svg>
-        <ul class="donut-legend" id="devLegend"><li class="loading">Loading…</li></ul>
-      </div>
+      <ul class="status-list" id="devStatusList"><li class="loading">Loading…</li></ul>
     </div>
   </section>
 
@@ -77,7 +71,7 @@
       <span class="muted" id="certifiedCount">—</span>
     </div>
     <p class="hint">Tickets across MO EVV Aggregators + MO EVV Accruals that have reached a Done status.</p>
-    <div class="table-scroll">
+    <div class="table-scroll scroll-cap">
       <table>
         <thead>
           <tr>
@@ -108,8 +102,11 @@
   </section>
 
   <section class="panel wide" aria-label="Live QA tickets">
-    <div class="panel-head"><h2>Live MO EVV QA tickets</h2></div>
-    <div class="table-scroll">
+    <div class="panel-head">
+      <h2>Live MO EVV QA tickets</h2>
+      <span class="muted" id="qaTableCount">—</span>
+    </div>
+    <div class="table-scroll scroll-cap">
       <table>
         <thead>
           <tr><th>Key</th><th>Summary</th><th>Status</th><th>Release version</th><th>Assignee</th><th>QA assignee</th></tr>
@@ -120,8 +117,11 @@
   </section>
 
   <section class="panel wide" aria-label="Live DEV tickets">
-    <div class="panel-head"><h2>Live MO EVV DEV tickets</h2></div>
-    <div class="table-scroll">
+    <div class="panel-head">
+      <h2>Live MO EVV DEV tickets</h2>
+      <span class="muted" id="devTableCount">—</span>
+    </div>
+    <div class="table-scroll scroll-cap">
       <table>
         <thead>
           <tr><th>Key</th><th>Summary</th><th>Status</th><th>Release version</th><th>Assignee</th><th>QA assignee</th></tr>
