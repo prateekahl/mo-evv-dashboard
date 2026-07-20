@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MO EVV · Accruals + Aggregator — Release Burndown</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><rect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%230F766E%22/><path d=%22M9 17l5 5 9-11%22 stroke=%22white%22 stroke-width=%223%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--accent)"/><path d="M9 17l5 5 9-11" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="topbar-titles">
+      <p class="eyebrow">MO EVV · Accruals + Aggregator</p>
+      <h1>Release burndown</h1>
+      <p class="sub">Viv Technologies · Target: <span id="targetDateLabel">—</span> · Combined DEV + QA pipeline</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="updated">Updated <span id="updatedAt">—</span></span>
+    <button class="btn btn-ghost" id="refreshBtn">↺ Refresh</button>
+    <button class="btn btn-ghost" id="faqBtn">❔ Flow FAQ</button>
+    <button class="btn btn-primary" id="openTicketBtn">＋ Open Ticket</button>
+  </div>
+</header>
+
+<main>
+
+  <section class="stat-row" aria-label="Summary stats">
+    <div class="stat-card">
+      <p class="stat-label">Combined MO EVV tickets</p>
+      <p class="stat-value" id="statCombined">—</p>
+      <p class="stat-foot">total to certify</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Certified MO EVV tickets</p>
+      <p class="stat-value" id="statCertified">—</p>
+      <p class="stat-foot">done on the target release line</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Total tickets actioned</p>
+      <p class="stat-value" id="statActioned">—</p>
+      <p class="stat-foot">combined + certified</p>
+    </div>
+  </section>
+
+  <section class="status-row" aria-label="Status breakdowns">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>QA by status</h2>
+        <a class="panel-link" id="qaJiraLink" href="#" target="_blank" rel="noopener">Open in Jira ↗</a>
+      </div>
+      <div class="donut-wrap">
+        <svg class="donut" id="qaDonut" viewBox="0 0 120 120"></svg>
+        <ul class="donut-legend" id="qaLegend"><li class="loading">Loading…</li></ul>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h2>DEV by status</h2>
+        <a class="panel-link" id="devJiraLink" href="#" target="_blank" rel="noopener">Open in Jira ↗</a>
+      </div>
+      <div class="donut-wrap">
+        <svg class="donut" id="devDonut" viewBox="0 0 120 120"></svg>
+        <ul class="donut-legend" id="devLegend"><li class="loading">Loading…</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel wide" aria-label="MO EVV pipeline snapshot">
+    <div class="panel-head">
+      <h2>MO EVV pipeline snapshot</h2>
+    </div>
+    <div class="sub-panel-head">
+      <h3>✓ MO EVV certified</h3>
+      <span class="muted" id="certifiedCount">—</span>
+      <a class="panel-link" id="certifiedJiraLink" href="#" target="_blank" rel="noopener">Open in Jira ↗</a>
+    </div>
+    <p class="hint">Tickets on the target release line that have reached a Done status.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Key</th><th>Summary</th><th>Status</th><th>Release version</th><th>Assignee</th><th>QA assignee</th>
+          </tr>
+        </thead>
+        <tbody id="certifiedTable"><tr><td colspan="6" class="loading">Loading tickets…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="stat-row" aria-label="Pace stats">
+    <div class="stat-card">
+      <p class="stat-label">Days to target</p>
+      <p class="stat-value" id="statDaysToTarget">—</p>
+      <p class="stat-foot">working days</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">MO EVV ticket burn rate</p>
+      <p class="stat-value" id="statBurnRate">—</p>
+      <p class="stat-foot">certified/day</p>
+    </div>
+    <div class="stat-card">
+      <p class="stat-label">Projected done</p>
+      <p class="stat-value" id="statProjectedDone">—</p>
+      <p class="stat-foot">at current pace</p>
+    </div>
+  </section>
+
+  <section class="panel wide" aria-label="Live QA tickets">
+    <div class="panel-head"><h2>Live MO EVV QA tickets</h2></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Key</th><th>Summary</th><th>Status</th><th>Release version</th><th>Assignee</th><th>QA assignee</th></tr>
+        </thead>
+        <tbody id="qaTable"><tr><td colspan="6" class="loading">Loading tickets…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel wide" aria-label="Live DEV tickets">
+    <div class="panel-head"><h2>Live MO EVV DEV tickets</h2></div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Key</th><th>Summary</th><th>Status</th><th>Release version</th><th>Assignee</th><th>QA assignee</th></tr>
+        </thead>
+        <tbody id="devTable"><tr><td colspan="6" class="loading">Loading tickets…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- Open Ticket modal -->
+<div class="modal-backdrop" id="ticketModalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="ticketModalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="ticketModalTitle">Open a ticket</h2>
+        <p class="hint">Creates an issue in the MO EVV Accruals + Aggregator project</p>
+      </div>
+      <button class="modal-close" id="ticketModalClose" aria-label="Close">✕</button>
+    </div>
+    <form id="ticketForm">
+      <label class="field">
+        <span>Issue type *</span>
+        <select id="issueType" required>
+          <option value="">— Select issue type —</option>
+          <option value="Bug">Functionality isn't working as expected. (Bug)</option>
+          <option value="Enhancement">The flow/process of the functionality needs improvement. (Enhancement)</option>
+          <option value="Story">There is missing capability. (Story)</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Ticket summary / title *</span>
+        <input type="text" id="ticketSummary" required maxlength="255">
+      </label>
+      <label class="field">
+        <span>Description — what is the issue? *</span>
+        <textarea id="ticketDescription" required rows="4"></textarea>
+      </label>
+      <label class="field">
+        <span>Priority *</span>
+        <select id="ticketPriority" required>
+          <option value="">— Select priority —</option>
+          <option value="Urgent">🔴 Urgent</option>
+          <option value="High">🟠 High</option>
+          <option value="Medium">🟡 Medium</option>
+          <option value="Low">⚪ Low</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Attachments (optional)</span>
+        <input type="file" id="ticketAttachments" multiple>
+        <span class="hint">Screenshots and small docs under ~5 MB each.</span>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="ticketCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-primary">Submit ticket</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Flow FAQ modal -->
+<div class="modal-backdrop" id="faqModalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="faqModalTitle">
+    <div class="modal-head">
+      <div>
+        <h2 id="faqModalTitle">Flow FAQ</h2>
+        <p class="hint">From opening a ticket to MO EVV certification</p>
+      </div>
+      <button class="modal-close" id="faqModalClose" aria-label="Close">✕</button>
+    </div>
+    <ol class="faq-steps">
+      <li>
+        <h3>Open a ticket</h3>
+        <p>Click <strong>Open Ticket</strong> in the top right. Fill in the issue type, summary, description, and priority, then submit.</p>
+      </li>
+      <li>
+        <h3>Ticket is created in Jira</h3>
+        <p>On submit, an issue is created in the MO EVV Accruals + Aggregator project with the preset DEV and QA assignees. It appears in the live tables on the next refresh.</p>
+      </li>
+      <li>
+        <h3>The ticket moves through the pipeline</h3>
+        <p>It starts in DEV statuses; once DEV is complete it moves into QA statuses. The status donuts at the top reflect where everything sits.</p>
+      </li>
+      <li>
+        <h3>Ticket gets certified</h3>
+        <p>Once QA finishes, the ticket reaches a Done status on the target release line and appears in the MO EVV certified table.</p>
+      </li>
+    </ol>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

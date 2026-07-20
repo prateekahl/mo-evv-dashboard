@@ -1,0 +1,9 @@
+{
+  "name": "mo-evv-accruals-aggregator-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bayada MO EVV Accruals + Aggregator release burndown dashboard",
+  "engines": {
+    "node": ">=18"
+  }
+}
