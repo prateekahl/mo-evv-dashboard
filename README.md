@@ -76,25 +76,44 @@ pages (2,000 issues) per panel — raise `MAX_PAGES` in
 
 ## Notes on the burn-rate calc
 
-**Formula:** `(certified tickets today − certified tickets 14 days ago) ÷ 14`
+**Formula:** `(tickets certified in the trailing 14 calendar days) ÷ (working days in that window)`
 
-There's no historical database here, so this is tracked client-side: each
-day someone loads the dashboard, it stamps today's certified count into
-the visitor's browser (`localStorage`), keyed by date. The burn rate looks
-up the count from exactly 14 days ago and divides the difference by 14 to
-get a tickets/day rate.
+This now comes straight from Jira's own transition history, not a client-side
+guess. `config.js` has a `jql.recentlyCertified` query:
 
-Since you just started using this, there's no entry from 14 days ago yet
-— so the rate reads **0.00** today, by design, rather than trying to
-backfill from a single snapshot. It'll start reflecting a real rate once
-14 days of history have been collected (assuming the dashboard gets
-loaded at least once most days). History is kept for ~30 days and pruned
-automatically.
+```
+statusCategory = Done and statuscategorychangedate >= -14d
+```
 
-This resets per-browser and isn't a shared team-wide metric — if you want
-a real, shared historical burn rate, that needs a small server-side
-datastore (e.g. a Netlify Blob or a scheduled function that snapshots
-counts daily) instead of `localStorage`. Happy to build that next if useful.
+`statuscategorychangedate` is a real Jira field that records when an issue's
+status *category* last changed — so this counts tickets that actually became
+Done in the last 14 calendar days, straight from Jira's audit trail. The
+denominator is the number of Mon–Fri working days inside that same trailing
+14-day window (typically 10, occasionally more/less depending on how the
+window lands on weekends) — computed client-side in `app.js`.
+
+This is shared and accurate for everyone who loads the dashboard — no
+per-browser state, no "wait 14 days for it to warm up" like the previous
+version. One caveat: Jira's relative-date literals like `-14d` are evaluated
+in your Jira instance's configured time zone, not necessarily UTC — worth
+knowing if you ever see the count shift by a ticket right at a day boundary.
+
+## Notes on the target date
+
+`targetDate` in `config.js` is parsed as **UTC midnight** (the `Z` suffix on
+`T00:00:00Z` in `app.js` is what does this), so "Aug 5" means the same
+instant for every visitor regardless of their local timezone — not the
+visitor's own local midnight on Aug 5.
+
+`config.js`, `app.js`, and `index.html` are also set to `Cache-Control:
+no-cache, no-store, must-revalidate` in `netlify.toml`, and the script tags
+in `index.html` carry a `?v=` cache-busting query param. Both exist to stop
+browsers/CDNs from serving a stale target date after a deploy. **If you
+change `config.js` or `app.js` again, bump the `?v=` value in `index.html`'s
+script tags too** — that's the belt-and-suspenders half of the fix; the
+no-cache headers alone should already be sufficient, but the version bump
+guarantees it.
+
 
 ## File map
 

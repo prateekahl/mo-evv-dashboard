@@ -6,9 +6,11 @@
 // ---------------------------------------------------------------------------
 window.DASHBOARD_CONFIG = {
 
-  // Human-readable target date shown in the header + used for "days to target"
-  // Format: "YYYY-MM-DD"
-  targetDate: "2026-08-12", // e.g. "2026-09-30"
+  // Human-readable target date shown in the header + used for "days to target".
+  // Format: "YYYY-MM-DD". Interpreted as UTC midnight (see app.js) — not the
+  // visitor's local midnight — so this date means the same instant for
+  // everyone regardless of timezone.
+  targetDate: "2026-08-05",
 
   // Jira base URL, e.g. "https://vivtechnologies.atlassian.net"
   jiraBaseUrl: "https://vivtechnologies.atlassian.net",
@@ -30,6 +32,11 @@ window.DASHBOARD_CONFIG = {
 
     // DEV pipeline tickets (drives the "DEV by status" list + live DEV table)
     dev: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and status NOT IN ("In Testing", "Ready For Testing", "Testing in Branch", "Resolved Without Code", "QA Certified", "Re-verify Bug", "NO QA - Certified", "Retest After Cherrypick", "Archived") ORDER BY created DESC`,
+
+    // Drives the burn-rate stat: tickets whose status category became Done
+    // in the trailing 14 calendar days. Uses Jira's own statuscategorychangedate
+    // field, so this reflects real transition history, not a client-side guess.
+    recentlyCertified: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and statusCategory = Done and statuscategorychangedate >= -14d ORDER BY statuscategorychangedate DESC`,
   },
 
   // Optional: force a specific status's badge/pill color instead of the

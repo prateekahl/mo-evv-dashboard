@@ -19,16 +19,18 @@
     return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
   }
 
+  function utcMidnight(d) {
+    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  }
+
   function businessDaysBetween(start, end) {
     let count = 0;
-    const cur = new Date(start);
-    cur.setHours(0, 0, 0, 0);
-    const last = new Date(end);
-    last.setHours(0, 0, 0, 0);
+    const cur = utcMidnight(start);
+    const last = utcMidnight(end);
     while (cur <= last) {
-      const day = cur.getDay();
+      const day = cur.getUTCDay();
       if (day !== 0 && day !== 6) count++;
-      cur.setDate(cur.getDate() + 1);
+      cur.setUTCDate(cur.getUTCDate() + 1);
     }
     return count;
   }
@@ -131,63 +133,29 @@
       </li>`;
   }
 
-  function certifiedHistory() {
-    const key = "moevv_certified_history";
-    try {
-      return JSON.parse(localStorage.getItem(key)) || {};
-    } catch {
-      return {};
-    }
-  }
+  // Burn rate = (tickets certified in the trailing 14-calendar-day window)
+  // ÷ (working days in that window). "Certified in window" comes straight
+  // from Jira via the recentlyCertified JQL (statuscategorychangedate >= -14d),
+  // so this reflects real transition history — not a client-side guess.
+  function updatePaceStats(certifiedCount, combinedCount, recentlyCertifiedCount) {
+    const today = utcMidnight(new Date());
 
-  function saveCertifiedHistory(hist) {
-    localStorage.setItem("moevv_certified_history", JSON.stringify(hist));
-  }
-
-  // Rolling 14-day burn rate: (certified today - certified 14 days ago) / 14.
-  // We only know "certified 14 days ago" from what this browser has recorded
-  // itself (once per calendar day), so the rate reads 0 until 14 days of
-  // history have actually been collected — it can't be backfilled from a
-  // single snapshot on day one.
-  function updateCertifiedHistoryAndGetBurnRate(certifiedCount) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayKey = today.toISOString().slice(0, 10);
-
-    const hist = certifiedHistory();
-    if (!(todayKey in hist)) hist[todayKey] = certifiedCount;
-
-    // Keep ~30 days of history, no need to grow forever.
-    const cutoff = new Date(today);
-    cutoff.setDate(cutoff.getDate() - 30);
-    Object.keys(hist).forEach((k) => {
-      if (new Date(k + "T00:00:00") < cutoff) delete hist[k];
-    });
-    saveCertifiedHistory(hist);
-
-    const fourteenAgo = new Date(today);
-    fourteenAgo.setDate(fourteenAgo.getDate() - 14);
-    const fourteenAgoKey = fourteenAgo.toISOString().slice(0, 10);
-
-    if (!(fourteenAgoKey in hist)) return 0; // not enough history yet
-
-    const diff = certifiedCount - hist[fourteenAgoKey];
-    return diff / 14;
-  }
-
-  function updatePaceStats(certifiedCount, combinedCount) {
-    const today = new Date();
-    const burnRate = updateCertifiedHistoryAndGetBurnRate(certifiedCount);
+    const windowStart = new Date(today);
+    windowStart.setUTCDate(windowStart.getUTCDate() - 14);
+    const workingDaysInWindow = businessDaysBetween(windowStart, today);
+    const burnRate = workingDaysInWindow > 0 ? recentlyCertifiedCount / workingDaysInWindow : 0;
 
     $("statBurnRate").textContent = burnRate.toFixed(2);
 
     if (CFG.targetDate) {
-      const target = new Date(CFG.targetDate + "T00:00:00");
+      // Parsed as true UTC midnight — "Z" suffix is what makes this a fixed
+      // instant instead of the visitor's local midnight.
+      const target = new Date(CFG.targetDate + "T00:00:00Z");
       const daysLeft = businessDaysBetween(today, target);
       $("statDaysToTarget").textContent = daysLeft >= 0 ? daysLeft : "0";
-      const targetLabel = target.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      const targetLabel = target.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
       $("targetDateLabel").textContent = target.toLocaleDateString(undefined, {
-        month: "short", day: "numeric", year: "numeric",
+        month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
       });
       $("daysToTargetLabel").textContent = targetLabel;
     }
@@ -197,15 +165,15 @@
     const remaining = Math.max(0, combinedCount);
     if (burnRate > 0 && remaining > 0) {
       const daysNeeded = Math.ceil(remaining / burnRate);
-      const projected = new Date();
+      const projected = utcMidnight(new Date());
       let added = 0;
       while (added < daysNeeded) {
-        projected.setDate(projected.getDate() + 1);
-        const day = projected.getDay();
+        projected.setUTCDate(projected.getUTCDate() + 1);
+        const day = projected.getUTCDay();
         if (day !== 0 && day !== 6) added++;
       }
       $("statProjectedDone").textContent = projected.toLocaleDateString(undefined, {
-        month: "short", day: "numeric",
+        month: "short", day: "numeric", timeZone: "UTC",
       });
     } else if (remaining === 0) {
       $("statProjectedDone").textContent = "Done";
@@ -224,11 +192,12 @@
     }
 
     try {
-      const [combined, certified, qa, dev] = await Promise.all([
+      const [combined, certified, qa, dev, recentlyCertified] = await Promise.all([
         fetchJQL(CFG.jql.combined),
         fetchJQL(CFG.jql.certified),
         fetchJQL(CFG.jql.qa),
         fetchJQL(CFG.jql.dev),
+        fetchJQL(CFG.jql.recentlyCertified),
       ]);
 
       $("statCombined").textContent = combined.length || "0";
@@ -245,7 +214,7 @@
       renderTable("qaTable", qa);
       renderTable("devTable", dev);
 
-      updatePaceStats(certified.length, combined.length);
+      updatePaceStats(certified.length, combined.length, recentlyCertified.length);
 
       $("updatedAt").textContent = fmtTime(new Date());
     } catch (err) {
