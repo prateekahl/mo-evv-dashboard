@@ -37,7 +37,24 @@ window.DASHBOARD_CONFIG = {
     // in the trailing 14 calendar days. Uses Jira's own statuscategorychangedate
     // field, so this reflects real transition history, not a client-side guess.
     recentlyCertified: `"Projects[Checkboxes]" in ("MO EVV Aggregators", "MO EVV Accruals") and statusCategory = Done and statuscategorychangedate >= -14d ORDER BY statuscategorychangedate DESC`,
+
+    // Child work items of the 4 crucial-for-UAT epics (see crucialEpics below)
+    // that have reached a Done status category. Drives the "Certified Crucial
+    // MO EVV Tickets" stat card.
+    crucialCertified: `parent in (DEV-47574, DEV-37860, DEV-43129, DEV-43319) and statusCategory = Done ORDER BY key ASC`,
+
+    // Child work items of the crucial epics still in To Do or In Progress.
+    // Drives the yellow bracketed count on the "Combined MO EVV Tickets" card.
+    crucialOutstanding: `parent in (DEV-47574, DEV-37860, DEV-43129, DEV-43319) and statusCategory in ("To Do", "In Progress") ORDER BY key ASC`,
   },
+
+  // Epics whose child work items are crucial for a UAT drop. Any ticket
+  // rendered elsewhere on the dashboard (QA/DEV/certified tables) whose
+  // `parent` is one of these gets a yellow row highlight. Update this list
+  // whenever the crucial-epic set changes — nothing else needs to change,
+  // since the two jql entries above and the row-highlight logic in app.js
+  // both read from here.
+  crucialEpics: ["DEV-47574", "DEV-37860", "DEV-43129", "DEV-43319"],
 
   // Optional: force a specific status's badge/pill color instead of the
   // default heuristic (green = "in testing"/"in progress", red = "needs"/

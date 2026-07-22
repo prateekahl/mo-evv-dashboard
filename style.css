@@ -9,6 +9,7 @@
   --accent: #4f8ef7;
   --green: #3ecf8e;
   --amber: #f59e0b;
+  --yellow: #eab308;
   --red: #ef4444;
   --purple: #a78bfa;
   --mono: 'IBM Plex Mono', monospace;
@@ -118,6 +119,10 @@ main {
   gap: 12px;
 }
 
+.stat-row.stat-row-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -127,6 +132,15 @@ main {
 
 .stat-card.accent-green { border-color: #1a4731; }
 .stat-card.accent-blue { border-color: #2d6cc0; }
+.stat-card.accent-yellow { border-color: #6b5a0a; }
+
+.text-yellow { color: var(--yellow); }
+
+.stat-value-bracket {
+  font-size: 18px;
+  font-weight: 600;
+  margin-left: 4px;
+}
 
 .stat-label {
   margin: 0 0 8px;
@@ -316,6 +330,15 @@ tbody td {
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background: rgba(79, 142, 247, 0.06); }
 
+tbody tr.crucial-row td {
+  background: rgba(234, 179, 8, 0.1);
+  border-bottom-color: rgba(234, 179, 8, 0.25);
+}
+tbody tr.crucial-row:hover td { background: rgba(234, 179, 8, 0.16); }
+tbody tr.crucial-row td:first-child {
+  box-shadow: inset 3px 0 0 var(--yellow);
+}
+
 td.key {
   font-family: var(--mono);
   font-size: 12px;
@@ -480,8 +503,12 @@ td.muted-cell { color: var(--muted); font-family: var(--mono); font-size: 12px; 
 }
 
 /* Responsive */
+@media (max-width: 1100px) {
+  .stat-row.stat-row-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 860px) {
-  .stat-row, .status-row { grid-template-columns: 1fr; }
+  .stat-row, .status-row, .stat-row.stat-row-4 { grid-template-columns: 1fr; }
   .topbar { padding: 16px 20px; }
   main { padding: 20px 16px 48px; }
 }

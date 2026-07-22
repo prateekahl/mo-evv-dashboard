@@ -25,7 +25,7 @@ exports.handler = async (event) => {
 
   const auth = Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString("base64");
   const fields = [
-    "summary", "status", "fixVersions", "assignee",
+    "summary", "status", "fixVersions", "assignee", "parent",
     // If you add a custom field for "QA assignee" in Jira, put its id here
     // e.g. "customfield_10045" — and reference it in app.js's normalizeIssue().
   ];

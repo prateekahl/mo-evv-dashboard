@@ -65,7 +65,13 @@
       release: (f.fixVersions && f.fixVersions.map((v) => v.name).join(", ")) || "—",
       assignee: f.assignee ? f.assignee.displayName : "Unassigned",
       qaAssignee: (f.customfield_qa_assignee && f.customfield_qa_assignee.displayName) || "—",
+      parentKey: f.parent ? f.parent.key : null,
     };
+  }
+
+  function isCrucial(issue) {
+    const epics = CFG.crucialEpics || [];
+    return !!issue.parentKey && epics.includes(issue.parentKey);
   }
 
   // ---------------------------------------------------------------------
@@ -80,7 +86,7 @@
     body.innerHTML = issues
       .map(
         (t) => `
-      <tr>
+      <tr class="${isCrucial(t) ? "crucial-row" : ""}">
         <td class="key">${t.key}</td>
         <td>${escapeHtml(t.summary)}</td>
         <td><span class="status-pill ${statusToClass(t.status)}">${escapeHtml(t.status)}</span></td>
@@ -192,15 +198,19 @@
     }
 
     try {
-      const [combined, certified, qa, dev, recentlyCertified] = await Promise.all([
+      const [combined, certified, qa, dev, recentlyCertified, crucialCertified, crucialOutstanding] = await Promise.all([
         fetchJQL(CFG.jql.combined),
         fetchJQL(CFG.jql.certified),
         fetchJQL(CFG.jql.qa),
         fetchJQL(CFG.jql.dev),
         fetchJQL(CFG.jql.recentlyCertified),
+        fetchJQL(CFG.jql.crucialCertified),
+        fetchJQL(CFG.jql.crucialOutstanding),
       ]);
 
       $("statCombined").textContent = combined.length || "0";
+      $("statCombinedCrucial").textContent = `(${crucialOutstanding.length})`;
+      $("statCrucialCertified").textContent = crucialCertified.length || "0";
       $("statCertified").textContent = certified.length || "0";
       $("statActioned").textContent = combined.length + certified.length;
       $("certifiedCount").textContent = `${certified.length} certified`;

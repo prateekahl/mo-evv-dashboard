@@ -114,6 +114,26 @@ script tags too** — that's the belt-and-suspenders half of the fix; the
 no-cache headers alone should already be sufficient, but the version bump
 guarantees it.
 
+## Notes on the crucial-epics highlighting
+
+`config.js` has a `crucialEpics` array — currently the 4 epics whose child
+work items are crucial for the 4.5.0-bayada UAT drop. This drives three
+things, all automatically, with nothing to maintain per-ticket:
+
+- **Row highlighting**: any ticket rendered in the certified/QA/DEV tables
+  whose Jira `parent` is in `crucialEpics` gets a yellow left-border
+  highlight (`.crucial-row` in `style.css`).
+- **"Certified Crucial MO EVV tickets" stat card**: count of crucial-epic
+  child tickets with a Done status category (`jql.crucialCertified`).
+- **Yellow bracket on "Combined MO EVV tickets"**: count of crucial-epic
+  child tickets still To Do / In Progress (`jql.crucialOutstanding`).
+
+This is JQL-driven (`parent in (...)`) rather than a hardcoded ticket list,
+so it stays correct as child tickets move between statuses — no manual
+updates needed unless the set of crucial epics itself changes, in which
+case just edit `crucialEpics` (and the two JQL strings alongside it, which
+currently repeat the same epic keys inline).
+
 
 ## File map
 
