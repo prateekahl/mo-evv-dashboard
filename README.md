@@ -114,25 +114,46 @@ script tags too** — that's the belt-and-suspenders half of the fix; the
 no-cache headers alone should already be sufficient, but the version bump
 guarantees it.
 
-## Notes on the crucial-epics highlighting
+## Notes on the crucial-epics highlighting and the top 4 stat cards
 
-`config.js` has a `crucialEpics` array — currently the 4 epics whose child
-work items are crucial for the 4.5.0-bayada UAT drop. This drives three
-things, all automatically, with nothing to maintain per-ticket:
+`config.js` has a `crucialEpics` array (and a matching `CRUCIAL_EPICS_CLAUSE`
+JQL literal above the config object) — currently the 4 epics whose child
+work items are crucial for the 4.5.0-bayada UAT drop.
 
-- **Row highlighting**: any ticket rendered in the certified/QA/DEV tables
-  whose Jira `parent` is in `crucialEpics` gets a yellow left-border
-  highlight (`.crucial-row` in `style.css`).
-- **"Certified Crucial MO EVV tickets" stat card**: count of crucial-epic
-  child tickets with a Done status category (`jql.crucialCertified`).
-- **Yellow bracket on "Combined MO EVV tickets"**: count of crucial-epic
-  child tickets still To Do / In Progress (`jql.crucialOutstanding`).
+**Row highlighting**: any ticket rendered in the certified/QA/DEV tables
+whose Jira `parent` is in `crucialEpics` gets a yellow left-border highlight
+(`.crucial-row` in `style.css`).
 
-This is JQL-driven (`parent in (...)`) rather than a hardcoded ticket list,
-so it stays correct as child tickets move between statuses — no manual
-updates needed unless the set of crucial epics itself changes, in which
-case just edit `crucialEpics` (and the two JQL strings alongside it, which
-currently repeat the same epic keys inline).
+**The top 4 stat cards use two different scopes on purpose** — this tripped
+us up once already, worth being explicit about:
+
+- **Combined MO EVV tickets** and **Certified MO EVV tickets** (and, by
+  extension, **Total tickets actioned**) use the *union* of two conditions:
+  tagged `Projects[Checkboxes]` = MO EVV Aggregators/Accruals, **or** a
+  child of one of the 4 crucial epics. A ticket only needs to match one of
+  the two to count — it doesn't need both. This means these three cards can
+  include tickets that were never tagged MO EVV at all, as long as they
+  belong to one of the crucial epics.
+- **Certified Crucial MO EVV tickets** uses *only* epic membership
+  (`crucialCertified` JQL) — the MO EVV tag is irrelevant here, so this
+  number is **not** a subset of "Certified MO EVV tickets" above it, even
+  though it sits right next to it. It's a completely separate count: all
+  Done children of the 4 epics, regardless of tag.
+
+Concretely, as of this writing: 176 tickets carry the MO EVV tag and are
+Done; 502 are Done children of the 4 epics; only 160 satisfy both. So
+"Certified MO EVV tickets" (union, tag OR epics) = 518, while "Certified
+Crucial MO EVV tickets" (epics only) = 502 — two different, overlapping-but-
+not-nested numbers. If that ever looks wrong, it's worth re-confirming
+which of the two scopes you actually want for each card rather than
+assuming one word.
+
+This is JQL-driven (`parent in (...)` / `Projects[Checkboxes] in (...)`)
+rather than a hardcoded ticket list, so it stays correct as tickets move
+between statuses — no manual updates needed unless the set of crucial
+epics itself changes, in which case edit `crucialEpics` **and**
+`CRUCIAL_EPICS_CLAUSE` together (they're two separate literals that need
+to stay in sync).
 
 
 ## File map
